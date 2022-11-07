@@ -1,10 +1,10 @@
-from utils import square_f
+from utils import square_f, hz_to_omega
 
 class Source:
     phi = 0
 
-    def __init__(self, omega, noise_f, out_f):
-        self.omega = omega
+    def __init__(self, hz, noise_f, out_f):
+        self.omega = hz_to_omega(hz)
         self.noise_f = noise_f
         self.out_f = out_f
 
@@ -17,9 +17,9 @@ class Source:
 class VCO:
     phi = 0
 
-    def __init__(self, omega, slope):
-        self.omega = omega
-        self.slope = slope
+    def __init__(self, hz, slope_hz):
+        self.omega = hz_to_omega(hz)
+        self.slope = hz_to_omega(slope_hz)
 
     def step(self, t, dt, v_in):
         self.phi += (self.omega + v_in * self.slope) * dt

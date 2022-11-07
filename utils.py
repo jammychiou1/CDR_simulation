@@ -1,5 +1,7 @@
 from math import sin, pi
 
-noise_f = lambda t: 0.3 * sin(t)
-square_f = lambda phi: 0 if phi % (2 * pi) < pi else 1
+def hz_to_omega(hz):
+    return hz * 2 * pi
 
+noise_f = lambda t: 0.03 * sin(t)
+square_f = lambda phi: 0 if phi % (2 * pi) < pi else 1

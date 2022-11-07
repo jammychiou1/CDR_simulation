@@ -9,8 +9,8 @@ end = 1000
 steps = 100000
 dt = (end - start) / steps
 
-src = Source(10, noise_f, square_f)
-vco = VCO(10, 5)
+src = Source(0.3, noise_f, square_f)
+vco = VCO(0.3, 0.1)
 detector = Detector()
 low_pass = LowPass(0.001)
 
