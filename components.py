@@ -33,12 +33,9 @@ class LowPass:
         self.r = r
 
     def step(self, t, dt, v_in):
-        # print(v_in)
-        # input()
         if self.avg is None:
             self.avg = v_in
             return
-        # print((v_in - self.avg) / dt)
         self.avg = self.avg + (v_in - self.avg) / dt * self.r
 
     def out(self):
