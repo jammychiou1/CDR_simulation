@@ -10,11 +10,13 @@ steps = 100000
 dt = (end - start) / steps
 
 src = Source(0.3, noise_f, square_f)
-vco = VCO(0.3, 0.1)
+vco = VCO(0.15, 0.10)
 detector = Detector()
-low_pass = LowPass(0.001)
+low_pass = LowPass(0.0001)
+nrz = NRZ_TX(0.3, noise_f, [0, 1] * 1000)
 
 v_i_s = []
+v_n_s = []
 v_o_s = []
 v_d_s = []
 v_f_s = []
@@ -24,18 +26,21 @@ last_v_f = 0
 
 for t in ts:
     src.step(t, dt)
+    nrz.step(t, dt)
     vco.step(t, dt, last_v_f)
 
     v_i = src.out()
+    v_n = nrz.out()
     v_o = vco.out()
 
-    detector.step(t, dt, v_i, v_o)
+    detector.step(t, dt, v_n, v_o)
     v_d = detector.out()
 
     low_pass.step(t, dt, v_d)
     v_f = low_pass.out()
 
     v_i_s.append(v_i)
+    v_n_s.append(v_n)
     v_o_s.append(v_o)
     v_d_s.append(v_d)
     v_f_s.append(v_f)
@@ -44,12 +49,14 @@ for t in ts:
 
 
 def graph():
-    last = 3000
-    _, subplots = plt.subplots(2)
-    subplots[0].plot(ts[-last:], v_i_s[-last:], color='r')
-    subplots[0].plot(ts[-last:], v_o_s[-last:], color='g')
-    subplots[1].plot(ts[-last:], v_d_s[-last:], color='b')
-    subplots[1].plot(ts[-last:], v_f_s[-last:], color='y')
+    last = 100000
+    fig, axs = plt.subplots(2, sharex=True)
+    #subplots[0].plot(ts[-last:], v_i_s[-last:], color='r', label='input')
+    axs[0].plot(ts[-last:], v_n_s[-last:], color='r', label='nrz')
+    axs[0].plot(ts[-last:], v_o_s[-last:], color='g', label='output')
+    axs[1].plot(ts[-last:], v_d_s[-last:], color='b', label='detector')
+    axs[1].plot(ts[-last:], v_f_s[-last:], color='y', label='filtered')
+    fig.legend()
     plt.show()
 
 graph()
