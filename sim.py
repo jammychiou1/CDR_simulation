@@ -13,7 +13,7 @@ vco = VCO(0.3, 0.05)
 phase_detector = PhaseDetector()
 low_pass = LowPass(0.001)
 noise_f = sine_wave_f(0.01, 0.1, 0)
-nrz = NRZ_TX(0.295, noise_f, [0, 0, 0, 0, 0, 1, 1, 1, 1, 1] * 1000)
+nrz = NRZ_TX(0.295, noise_f, [0, 0, 1] * 1000)
 edge_detector = EdgeDetector(0.3)
 bbd = BangBangPD()
 
