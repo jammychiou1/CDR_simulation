@@ -1,6 +1,39 @@
 from utils import square_f, hz_to_omega
 from math import pi
 
+class Delay:
+    events = []
+    last_input = 0.5
+    output = 0.5
+    def __init__(self, delay):
+        self.delay = delay
+
+    def step(self, t, dt, v):
+        if self.last_input != v:
+            self.events.append((t + self.delay, v))
+            self.last_input = v
+        while len(self.events):
+            if self.events[0][0] < t:
+                self.output = self.events[0][1]
+                self.events.pop(0)
+            else:
+                break
+
+    def out(self):
+        return self.output
+
+class EdgeDetector:
+    last_input = 0.5
+    def __init__(self, delay):
+        self.delay = Delay(delay)
+
+    def step(self, t, dt, v):
+        self.last_input = v
+        self.delay.step(t, dt, v)
+
+    def out(self):
+        return self.last_input != self.delay.out()
+
 class Source:
     phi = 0
 
@@ -70,20 +103,46 @@ class VCO:
         return square_f(self.phi)
 
 class LowPass:
-    avg = None
+    now = None
     def __init__(self, r):
         self.r = r
 
     def step(self, t, dt, v_in):
-        if self.avg is None:
-            self.avg = v_in
+        if self.now is None:
+            self.now = v_in
             return
-        self.avg = self.avg + (v_in - self.avg) / dt * self.r
+        rate = (v_in - self.now) / dt * self.r
+        self.now = self.now + rate * dt
 
     def out(self):
-        return self.avg
+        return self.now
 
-class Detector:
+class BangBangPD:
+    s0 = 0.5
+    s1 = 0.5
+    s2 = 0.5
+    s3 = 0.5
+    last_clock = 0.5
+
+    def step(self, t, dt, data, clock):
+        if clock != self.last_clock:
+            if clock > 0.5:
+                self.s1, self.s2, self.s3 = self.s3, self.s0, data
+            else:
+                self.s0 = data
+
+        self.last_clock = clock
+
+    def out(self):
+        if self.s1 == self.s2 and self.s2 != self.s3:
+            # clock late
+            return 1
+        if self.s1 != self.s2 and self.s2 == self.s3:
+            # clock early
+            return -1
+        return 0
+
+class PhaseDetector:
     last_v_1 = 0
     last_v_2 = 0
     up = 0
